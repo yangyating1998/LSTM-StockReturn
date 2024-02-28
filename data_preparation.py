@@ -1,12 +1,11 @@
-import pandas as pd
 from collections import deque
 import numpy as np
 from sklearn.model_selection import train_test_split
 
 class PrepareData:
-    def __init__(self, data, pre_days, mem_days):
+    def __init__(self, data, mem_days):
         self.data = data
-        self.pre_days = pre_days
+        self.pre_days = mem_days+1
         self.mem_days = mem_days
 
     def clean(self):
@@ -29,8 +28,9 @@ class PrepareData:
 
         # generate y
         self.data['output'] = self.data.daily_return.shift(-self.pre_days)
+        self.data.dropna(inplace=True)
 
-        self_data = self.data[1:]
+        self.data = self.data[1:]
 
         x_std = np.array(self.data.iloc[:, -4:])
         x_queue = deque(maxlen=self.mem_days)
@@ -47,7 +47,7 @@ class PrepareData:
 
         return X, y
 
-    def train_test_data(self, mem_days):
-        X, y = self.clean(mem_days)
-        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=self.test_size, shuffle=False)
+    def train_test_data(self):
+        X, y = self.clean()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
         return X_train, X_test, y_train, y_test

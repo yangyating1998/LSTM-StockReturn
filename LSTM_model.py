@@ -1,31 +1,33 @@
-import tensorflow as tf
+import tensorflow
 from tensorflow.python import keras
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint
 from data_preparation import PrepareData
+from keras.models import load_model
+import numpy as np
+
 
 class LSTMModelGenerator:
-    def __init__(self, X, y):
-        self.X = X
-        self.y = y
-        # self.test_size = test_size
-        # self.mem_day = mem_day
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        # self.model_path = None
 
     def model_build(self, units, layers, dense):
         model = Sequential()
-        model.add(LSTM(units, input_shape=self.X.shape[1:], activation='relu', return_sequences=True))
-        model.add(Dropout(0.1))
 
         for l in range(layers-1):
-            model.add(LSTM(units, input_shape=self.X.shape[1:], activation='relu', return_sequences=True))
+            model.add(LSTM(units, input_shape=self.X_train.shape[1:], activation='relu', return_sequences=True))
             model.add(Dropout(0.1))
 
         model.add(LSTM(units, activation='relu'))
         model.add(Dropout(0.1))
 
-        for d in range(dense):
+        for d in range(dense-1):
             model.add(Dense(units, activation='relu'))
             model.add(Dropout(0.1))
 
@@ -34,28 +36,39 @@ class LSTMModelGenerator:
         return model
 
     def model_optimization(self, units_package, layers_package, dense_package):
-        i = 0
+        best_val_loss = float('inf')
+        best_model = None
+        best_config = {}
+        model_path = ""
+
         for l in layers_package:
             for d in dense_package:
                 for u in units_package:
-                    i += 1
-                    filepath = '{val_loss:.2f}-{epoch:02d}' + f'lstm-{l}, dense-{d}, units-{u}'+ '.h5'
+
+                    filepath = 'Desktop/{epoch:02d}{val_loss:.2f}' + f'Desktop/lstm-{l}dense-{d}units-{u}'
                     self.model_build(u,l,d)
                     checkpoint = ModelCheckpoint(
                         filepath,
                         save_weights_only=False,
                         monitor='val_mape',
                         mode="min",
-                        save_best_only=True,
-                        initial_value_threshold=None,)
-                    X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=0.1, shuffle=False)
+                        initial_value_threshold=None)
                     model = self.model_build(u, l, d)
-                    model.fit(X_train, y_train, batch_size=32, epochs=50, validation_data=(X_test, y_test), callbacks=[checkpoint])
+                    history = model.fit(self.X_train, self.y_train, batch_size=32, epochs=30, validation_split=0.2, callbacks=checkpoint, shuffle=False)
+                    trained_val_loss = history.history['val_loss'][-1]
 
-                    val_loss = model.evaluate(X_test, y_test)[0]
-
-                    if i == 1 or val_loss < best_val_loss:
-                        best_val_loss = val_loss
+                    if trained_val_loss < best_val_loss:
+                        best_val_loss = trained_val_loss
                         best_config = {'units': u, 'layers': l, 'dense': d}
-        return best_config
-
+                        model_path = filepath
+                        best_model = model
+        # best_model.fit(self.X_train, self.y_train)
+        test_evaluation = best_model.evaluate(self.X_test, self.y_test)
+        return best_config, model_path, best_val_loss, test_evaluation
+    #
+    # def best_model_trained(self):
+    #
+    #     best_config, best_model = load_model(self.model_path)
+    #     best_model.summary()
+    #     evaluation = best_model.evaluate(self.X_test, self.y_test)
+    #     return evaluation
