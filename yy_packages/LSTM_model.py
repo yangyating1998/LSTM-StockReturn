@@ -54,7 +54,7 @@ class LSTMModelGenerator:
                         mode="min",
                         initial_value_threshold=None)
                     model = self.model_build(u, l, d)
-                    history = model.fit(self.X_train, self.y_train, batch_size=32, epochs=30, validation_split=0.2, callbacks=checkpoint, shuffle=False)
+                    history = model.fit(self.X_train, self.y_train, batch_size=32, epochs=50, validation_split=0.2, callbacks=checkpoint, shuffle=False)
                     trained_val_loss = history.history['val_loss'][-1]
 
                     if trained_val_loss < best_val_loss:
@@ -65,10 +65,3 @@ class LSTMModelGenerator:
         # best_model.fit(self.X_train, self.y_train)
         test_evaluation = best_model.evaluate(self.X_test, self.y_test)
         return best_config, model_path, best_val_loss, test_evaluation
-    #
-    # def best_model_trained(self):
-    #
-    #     best_config, best_model = load_model(self.model_path)
-    #     best_model.summary()
-    #     evaluation = best_model.evaluate(self.X_test, self.y_test)
-    #     return evaluation

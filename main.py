@@ -1,7 +1,7 @@
 import pandas_datareader.data as web
 import datetime
-from LSTM_model import LSTMModelGenerator
-from data_preparation import PrepareData
+from yy_packages.LSTM_model import LSTMModelGenerator
+from yy_packages.data_preparation import PrepareData
 
 class OptimizedLSTMmodel:
     def __init__(self, ticker, start_day, end_day, mem_days = 5, units_packages = [8,16,32], layers_package=[1,2,3], dense_package=[1,2]):
