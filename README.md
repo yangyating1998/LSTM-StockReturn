@@ -1,5 +1,5 @@
 # Objectives
-This project implements an LSTM (Long Short-Term Memory) model for stock price prediction using Python, TensorFlow, and Keras. The model is optimized using various configurations of units, LSTM layers, and Dense layers, and it is trained on historical stock price data obtained from website stooq.
+This project implements an LSTM (Long Short-Term Memory) model for stock price prediction using Python, TensorFlow, and Keras. The model is optimized using various configurations of units, LSTM layers, and Dense layers, and it is trained on historical stock price data obtained from website [stooq](https://stooq.com/).
 
 ## Packages Used
 - TensorFlow
